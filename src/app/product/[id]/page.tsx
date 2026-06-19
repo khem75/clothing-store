@@ -54,12 +54,10 @@ export default async function ProductPage({
                             {product.description}
                         </p>
 
-                        {/* Stock */}
                         <p className="mt-4 text-green-400 font-semibold">
                             In Stock: {product.stock}
                         </p>
 
-                        {/* Size + Cart + Wishlist */}
                         <ProductActions product={product} />
 
                         <Link

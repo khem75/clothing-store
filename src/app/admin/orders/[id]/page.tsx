@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getOrder, getOrderItems } from "@/lib/order";
+import OrderStatus from "@/components/admin/OrderStatus";
 
 export default async function OrderDetailsPage({
     params,
@@ -75,10 +76,17 @@ export default async function OrderDetailsPage({
                         Rs. {order.total}
                     </p>
 
-                    <p>
-                        <strong>Status:</strong>{" "}
-                        {order.status || "Pending"}
-                    </p>
+                    <div className="flex items-center gap-4">
+
+                        <strong>Status:</strong>
+
+                        <OrderStatus
+                            currentStatus={
+                                order.status || "Pending"
+                            }
+                        />
+
+                    </div>
 
                 </div>
 
