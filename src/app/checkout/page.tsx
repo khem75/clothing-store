@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -16,10 +16,37 @@ export default function CheckoutPage() {
     const [phone, setPhone] = useState("");
     const [city, setCity] = useState("");
     const [address, setAddress] = useState("");
-    const [placingOrder, setPlacingOrder] = useState(false);
 
-    if (!loaded) {
-        return null;
+    const [placingOrder, setPlacingOrder] =
+        useState(false);
+
+    const [checkingAuth, setCheckingAuth] =
+        useState(true);
+
+    useEffect(() => {
+        const checkUser = async () => {
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            if (!user) {
+                router.push("/login");
+                return;
+            }
+
+            setEmail(user.email || "");
+            setCheckingAuth(false);
+        };
+
+        checkUser();
+    }, [router]);
+
+    if (!loaded || checkingAuth) {
+        return (
+            <div className="min-h-screen bg-black text-white flex items-center justify-center text-2xl">
+                Loading...
+            </div>
+        );
     }
 
     const subtotal = cart.reduce(
@@ -29,7 +56,13 @@ export default function CheckoutPage() {
     );
 
     const handlePlaceOrder = async () => {
-        if (!name || !email || !phone || !city || !address) {
+        if (
+            !name ||
+            !email ||
+            !phone ||
+            !city ||
+            !address
+        ) {
             alert("Please fill all fields");
             return;
         }
@@ -41,20 +74,31 @@ export default function CheckoutPage() {
 
         setPlacingOrder(true);
 
-        const { data: order, error } = await supabase
-            .from("orders")
-            .insert([
-                {
-                    customer_name: name,
-                    email: email,
-                    phone: phone,
-                    city: city,
-                    address: address,
-                    total: subtotal,
-                },
-            ])
-            .select()
-            .single();
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+            router.push("/login");
+            return;
+        }
+
+        const { data: order, error } =
+            await supabase
+                .from("orders")
+                .insert([
+                    {
+                        customer_name: name,
+                        email,
+                        phone,
+                        city,
+                        address,
+                        total: subtotal,
+                        user_id: user.id,
+                    },
+                ])
+                .select()
+                .single();
 
         if (error) {
             alert(error.message);
@@ -62,17 +106,20 @@ export default function CheckoutPage() {
             return;
         }
 
-        const orderItems = cart.map((item: any) => ({
-            order_id: order.id,
-            product_name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            size: item.size || "",
-        }));
+        const orderItems = cart.map(
+            (item: any) => ({
+                order_id: order.id,
+                product_name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                size: item.size || "",
+            })
+        );
 
-        const { error: itemError } = await supabase
-            .from("order_items")
-            .insert(orderItems);
+        const { error: itemError } =
+            await supabase
+                .from("order_items")
+                .insert(orderItems);
 
         if (itemError) {
             alert(itemError.message);
@@ -87,9 +134,11 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-black text-white">
+
             <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
 
                 <div className="text-center mb-16">
+
                     <p className="uppercase tracking-[8px] text-zinc-500 text-sm">
                         NINE77 STORE
                     </p>
@@ -101,11 +150,13 @@ export default function CheckoutPage() {
                     <p className="text-zinc-400 mt-6">
                         Complete your order securely.
                     </p>
+
                 </div>
 
                 <div className="grid lg:grid-cols-2 gap-10">
 
                     <div className="bg-zinc-900 p-8 rounded-3xl">
+
                         <h2 className="text-3xl font-bold mb-8">
                             Customer Information
                         </h2>
@@ -116,23 +167,26 @@ export default function CheckoutPage() {
                                 type="text"
                                 placeholder="Full Name"
                                 value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                onChange={(e) =>
+                                    setName(e.target.value)
+                                }
                                 className="w-full bg-black border border-zinc-700 rounded-xl p-4"
                             />
 
                             <input
                                 type="email"
-                                placeholder="Email Address"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-black border border-zinc-700 rounded-xl p-4"
+                                readOnly
+                                className="w-full bg-black border border-zinc-700 rounded-xl p-4 opacity-70"
                             />
 
                             <input
                                 type="text"
                                 placeholder="Phone Number"
                                 value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
+                                onChange={(e) =>
+                                    setPhone(e.target.value)
+                                }
                                 className="w-full bg-black border border-zinc-700 rounded-xl p-4"
                             />
 
@@ -140,7 +194,9 @@ export default function CheckoutPage() {
                                 type="text"
                                 placeholder="City"
                                 value={city}
-                                onChange={(e) => setCity(e.target.value)}
+                                onChange={(e) =>
+                                    setCity(e.target.value)
+                                }
                                 className="w-full bg-black border border-zinc-700 rounded-xl p-4"
                             />
 
@@ -148,11 +204,14 @@ export default function CheckoutPage() {
                                 rows={4}
                                 placeholder="Delivery Address"
                                 value={address}
-                                onChange={(e) => setAddress(e.target.value)}
+                                onChange={(e) =>
+                                    setAddress(e.target.value)
+                                }
                                 className="w-full bg-black border border-zinc-700 rounded-xl p-4"
                             />
 
                         </div>
+
                     </div>
 
                     <div className="bg-zinc-900 p-8 rounded-3xl">
@@ -165,15 +224,21 @@ export default function CheckoutPage() {
 
                             {cart.map((item: any) => (
                                 <div
-                                    key={item.id}
+                                    key={`${item.id}-${item.size}`}
                                     className="flex justify-between"
                                 >
                                     <span>
-                                        {item.name} × {item.quantity}
+                                        {item.name}
+                                        {item.size &&
+                                            ` (${item.size})`}
+                                        {" × "}
+                                        {item.quantity}
                                     </span>
 
                                     <span>
-                                        Rs. {item.price * item.quantity}
+                                        Rs.{" "}
+                                        {item.price *
+                                            item.quantity}
                                     </span>
                                 </div>
                             ))}
@@ -183,14 +248,19 @@ export default function CheckoutPage() {
                         <div className="border-t border-zinc-700 my-8"></div>
 
                         <div className="flex justify-between text-2xl font-bold">
+
                             <span>Total</span>
-                            <span>Rs. {subtotal}</span>
+
+                            <span>
+                                Rs. {subtotal}
+                            </span>
+
                         </div>
 
                         <button
                             onClick={handlePlaceOrder}
                             disabled={placingOrder}
-                            className="w-full mt-8 bg-white text-black py-4 rounded-full font-bold hover:bg-zinc-200 transition"
+                            className="block w-full mt-8 bg-white text-black py-4 rounded-full font-bold hover:bg-zinc-200 transition"
                         >
                             {placingOrder
                                 ? "Placing Order..."
@@ -209,6 +279,7 @@ export default function CheckoutPage() {
                 </div>
 
             </div>
+
         </div>
     );
 }

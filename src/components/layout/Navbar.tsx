@@ -1,15 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { supabase } from "@/lib/supabase";
 
 export default function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [user, setUser] = useState<any>(null);
+
+    const router = useRouter();
 
     const { cart } = useCart();
     const { wishlist } = useWishlist();
+
+    useEffect(() => {
+        const getUser = async () => {
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            setUser(user);
+        };
+
+        getUser();
+    }, []);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+        router.push("/");
+        router.refresh();
+    };
 
     return (
         <>
@@ -25,39 +49,50 @@ export default function Navbar() {
 
                     <div className="hidden md:flex gap-10 text-sm uppercase tracking-[2px] text-white">
 
-                        <Link href="/" className="hover:text-zinc-400 transition">
-                            Home
-                        </Link>
+                        <Link href="/">Home</Link>
 
-                        <Link href="/shop" className="hover:text-zinc-400 transition">
-                            Shop
-                        </Link>
+                        <Link href="/shop">Shop</Link>
 
-                        <Link href="/about" className="hover:text-zinc-400 transition">
-                            About
-                        </Link>
+                        <Link href="/about">About</Link>
 
-                        <Link href="/contact" className="hover:text-zinc-400 transition">
-                            Contact
-                        </Link>
+                        <Link href="/contact">Contact</Link>
 
                     </div>
 
-                    <div className="hidden md:flex gap-6 text-white text-sm uppercase">
+                    <div className="hidden md:flex gap-6 items-center text-white text-sm uppercase">
 
-                        <Link
-                            href="/wishlist"
-                            className="hover:text-zinc-400 transition"
-                        >
+                        <Link href="/wishlist">
                             ❤️ Wishlist ({wishlist.length})
                         </Link>
 
-                        <Link
-                            href="/cart"
-                            className="hover:text-zinc-400 transition"
-                        >
+                        <Link href="/cart">
                             🛒 Cart ({cart.length})
                         </Link>
+
+                        {user ? (
+                            <>
+                                <Link
+                                    href="/profile"
+                                    className="hover:text-zinc-400"
+                                >
+                                    👤 My Account
+                                </Link>
+
+                                <button
+                                    onClick={handleLogout}
+                                    className="hover:text-red-400"
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <Link
+                                href="/account"
+                                className="hover:text-zinc-400"
+                            >
+                                👤 Account
+                            </Link>
+                        )}
 
                     </div>
 
@@ -73,7 +108,9 @@ export default function Navbar() {
             </nav>
 
             <div
-                className={`fixed top-0 right-0 h-screen w-full bg-black z-[999] transform transition-transform duration-500 ${menuOpen ? "translate-x-0" : "translate-x-full"
+                className={`fixed top-0 right-0 h-screen w-full bg-black z-[999] transform transition-transform duration-500 ${menuOpen
+                    ? "translate-x-0"
+                    : "translate-x-full"
                     }`}
             >
 
@@ -90,29 +127,71 @@ export default function Navbar() {
 
                 <div className="flex flex-col items-center justify-center gap-10 text-white uppercase text-3xl font-bold">
 
-                    <Link href="/" onClick={() => setMenuOpen(false)}>
+                    <Link
+                        href="/"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         Home
                     </Link>
 
-                    <Link href="/shop" onClick={() => setMenuOpen(false)}>
+                    <Link
+                        href="/shop"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         Shop
                     </Link>
 
-                    <Link href="/about" onClick={() => setMenuOpen(false)}>
+                    <Link
+                        href="/about"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         About
                     </Link>
 
-                    <Link href="/contact" onClick={() => setMenuOpen(false)}>
+                    <Link
+                        href="/contact"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         Contact
                     </Link>
 
-                    <Link href="/wishlist" onClick={() => setMenuOpen(false)}>
+                    <Link
+                        href="/wishlist"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         ❤️ Wishlist ({wishlist.length})
                     </Link>
 
-                    <Link href="/cart" onClick={() => setMenuOpen(false)}>
+                    <Link
+                        href="/cart"
+                        onClick={() => setMenuOpen(false)}
+                    >
                         🛒 Cart ({cart.length})
                     </Link>
+
+                    {user ? (
+                        <>
+                            <Link
+                                href="/profile"
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                👤 My Account
+                            </Link>
+
+                            <button
+                                onClick={handleLogout}
+                            >
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <Link
+                            href="/account"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            👤 Account
+                        </Link>
+                    )}
 
                 </div>
 

@@ -3,12 +3,6 @@
 import Link from "next/link";
 
 export default function OrderSuccessPage() {
-    const orderId =
-        "N977-" +
-        Math.floor(
-            100000 + Math.random() * 900000
-        );
-
     return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center">
 
@@ -34,11 +28,11 @@ export default function OrderSuccessPage() {
                 <div className="bg-zinc-900 rounded-3xl p-6 mt-10">
 
                     <p className="text-zinc-500">
-                        Order Number
+                        Order Status
                     </p>
 
-                    <h2 className="text-3xl font-bold mt-2">
-                        {orderId}
+                    <h2 className="text-3xl font-bold mt-2 text-green-400">
+                        Order Received
                     </h2>
 
                 </div>
@@ -46,7 +40,7 @@ export default function OrderSuccessPage() {
                 <div className="mt-10 flex flex-col md:flex-row gap-4 justify-center">
 
                     <Link
-                        href="/shop"
+                        href="/"
                         className="bg-white text-black px-8 py-4 rounded-full font-bold hover:bg-zinc-200 transition"
                     >
                         Continue Shopping
