@@ -2,6 +2,7 @@ export default function OrdersPage() {
     return (
         <div className="min-h-screen bg-black text-white pt-32 px-6">
             <div className="max-w-5xl mx-auto">
+
                 <h1 className="text-5xl font-black mb-10">
                     My Orders
                 </h1>
@@ -11,6 +12,7 @@ export default function OrdersPage() {
                         No orders yet.
                     </p>
                 </div>
+
             </div>
         </div>
     );
