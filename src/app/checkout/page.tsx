@@ -1,10 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { supabase } from "@/lib/supabase";
 
 export default function CheckoutPage() {
-    const { cart, loaded } = useCart();
+    const router = useRouter();
+
+    const { cart, loaded, clearCart } = useCart();
+
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
+    const [city, setCity] = useState("");
+    const [address, setAddress] = useState("");
+    const [placingOrder, setPlacingOrder] = useState(false);
 
     if (!loaded) {
         return null;
@@ -16,13 +28,68 @@ export default function CheckoutPage() {
         0
     );
 
+    const handlePlaceOrder = async () => {
+        if (!name || !email || !phone || !city || !address) {
+            alert("Please fill all fields");
+            return;
+        }
+
+        if (cart.length === 0) {
+            alert("Cart is empty");
+            return;
+        }
+
+        setPlacingOrder(true);
+
+        const { data: order, error } = await supabase
+            .from("orders")
+            .insert([
+                {
+                    customer_name: name,
+                    email: email,
+                    phone: phone,
+                    city: city,
+                    address: address,
+                    total: subtotal,
+                },
+            ])
+            .select()
+            .single();
+
+        if (error) {
+            alert(error.message);
+            setPlacingOrder(false);
+            return;
+        }
+
+        const orderItems = cart.map((item: any) => ({
+            order_id: order.id,
+            product_name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size || "",
+        }));
+
+        const { error: itemError } = await supabase
+            .from("order_items")
+            .insert(orderItems);
+
+        if (itemError) {
+            alert(itemError.message);
+            setPlacingOrder(false);
+            return;
+        }
+
+        clearCart();
+
+        router.push("/order-success");
+    };
+
     return (
         <div className="min-h-screen bg-black text-white">
-
             <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
 
                 <div className="text-center mb-16">
-
                     <p className="uppercase tracking-[8px] text-zinc-500 text-sm">
                         NINE77 STORE
                     </p>
@@ -34,14 +101,11 @@ export default function CheckoutPage() {
                     <p className="text-zinc-400 mt-6">
                         Complete your order securely.
                     </p>
-
                 </div>
 
                 <div className="grid lg:grid-cols-2 gap-10">
 
-                    {/* Customer Information */}
                     <div className="bg-zinc-900 p-8 rounded-3xl">
-
                         <h2 className="text-3xl font-bold mb-8">
                             Customer Information
                         </h2>
@@ -51,38 +115,46 @@ export default function CheckoutPage() {
                             <input
                                 type="text"
                                 placeholder="Full Name"
-                                className="w-full bg-black border border-zinc-700 rounded-xl p-4 focus:border-white outline-none"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full bg-black border border-zinc-700 rounded-xl p-4"
                             />
 
                             <input
                                 type="email"
                                 placeholder="Email Address"
-                                className="w-full bg-black border border-zinc-700 rounded-xl p-4 focus:border-white outline-none"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full bg-black border border-zinc-700 rounded-xl p-4"
                             />
 
                             <input
                                 type="text"
                                 placeholder="Phone Number"
-                                className="w-full bg-black border border-zinc-700 rounded-xl p-4 focus:border-white outline-none"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                className="w-full bg-black border border-zinc-700 rounded-xl p-4"
                             />
 
                             <input
                                 type="text"
                                 placeholder="City"
-                                className="w-full bg-black border border-zinc-700 rounded-xl p-4 focus:border-white outline-none"
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                                className="w-full bg-black border border-zinc-700 rounded-xl p-4"
                             />
 
                             <textarea
-                                placeholder="Delivery Address"
                                 rows={4}
-                                className="w-full bg-black border border-zinc-700 rounded-xl p-4 focus:border-white outline-none"
+                                placeholder="Delivery Address"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                className="w-full bg-black border border-zinc-700 rounded-xl p-4"
                             />
 
                         </div>
-
                     </div>
 
-                    {/* Order Summary */}
                     <div className="bg-zinc-900 p-8 rounded-3xl">
 
                         <h2 className="text-3xl font-bold mb-8">
@@ -106,16 +178,6 @@ export default function CheckoutPage() {
                                 </div>
                             ))}
 
-                            <div className="flex justify-between">
-                                <span>Shipping</span>
-                                <span>Free</span>
-                            </div>
-
-                            <div className="flex justify-between">
-                                <span>Tax</span>
-                                <span>Rs. 0</span>
-                            </div>
-
                         </div>
 
                         <div className="border-t border-zinc-700 my-8"></div>
@@ -125,12 +187,15 @@ export default function CheckoutPage() {
                             <span>Rs. {subtotal}</span>
                         </div>
 
-                        <Link
-                            href="/order-success"
-                            className="block text-center w-full mt-8 bg-white text-black py-4 rounded-full font-bold hover:bg-zinc-200 transition"
+                        <button
+                            onClick={handlePlaceOrder}
+                            disabled={placingOrder}
+                            className="w-full mt-8 bg-white text-black py-4 rounded-full font-bold hover:bg-zinc-200 transition"
                         >
-                            Place Order
-                        </Link>
+                            {placingOrder
+                                ? "Placing Order..."
+                                : "Place Order"}
+                        </button>
 
                         <Link
                             href="/cart"
@@ -144,7 +209,6 @@ export default function CheckoutPage() {
                 </div>
 
             </div>
-
         </div>
     );
 }

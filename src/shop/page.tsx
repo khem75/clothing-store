@@ -1,12 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { products } from "@/data/products";
+import { getProducts } from "@/lib/products";
 
 export default function ShopPage() {
+    const [products, setProducts] = useState<any[]>([]);
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("All");
+
+    useEffect(() => {
+        async function loadProducts() {
+            const data = await getProducts();
+            setProducts(data);
+        }
+
+        loadProducts();
+    }, []);
 
     const filteredProducts = products.filter((product) => {
         const matchesSearch = product.name
@@ -23,7 +33,6 @@ export default function ShopPage() {
     return (
         <div className="min-h-screen bg-black text-white">
 
-            {/* Header */}
             <section className="pt-32 pb-16 text-center">
 
                 <p className="uppercase tracking-[8px] text-zinc-500 text-sm">
@@ -42,7 +51,6 @@ export default function ShopPage() {
 
             <section className="max-w-7xl mx-auto px-6 pb-24">
 
-                {/* Search & Filter */}
                 <div className="mb-10 flex flex-col md:flex-row gap-4">
 
                     <input
@@ -50,13 +58,13 @@ export default function ShopPage() {
                         placeholder="Search products..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="bg-zinc-900 border border-zinc-700 px-4 py-3 rounded-xl flex-1 outline-none focus:border-white"
+                        className="bg-zinc-900 border border-zinc-700 px-4 py-3 rounded-xl flex-1 outline-none"
                     />
 
                     <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="bg-zinc-900 border border-zinc-700 px-4 py-3 rounded-xl outline-none focus:border-white"
+                        className="bg-zinc-900 border border-zinc-700 px-4 py-3 rounded-xl outline-none"
                     >
                         <option>All</option>
                         <option>Shirts</option>
@@ -68,73 +76,49 @@ export default function ShopPage() {
 
                 </div>
 
-                {/* Product Count */}
-                <div className="mb-8 text-zinc-400">
-                    {filteredProducts.length} Product(s) Found
-                </div>
-
-                {/* Products */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-                    {filteredProducts.length === 0 ? (
+                    {filteredProducts.map((product) => (
+                        <div
+                            key={product.id}
+                            className="bg-zinc-900 rounded-3xl overflow-hidden group"
+                        >
 
-                        <div className="col-span-full text-center py-20">
+                            <div className="overflow-hidden">
 
-                            <h2 className="text-3xl font-bold">
-                                No Products Found
-                            </h2>
-
-                            <p className="text-zinc-400 mt-4">
-                                Try a different search or category.
-                            </p>
-
-                        </div>
-
-                    ) : (
-
-                        filteredProducts.map((product) => (
-                            <div
-                                key={product.id}
-                                className="bg-zinc-900 rounded-3xl overflow-hidden group"
-                            >
-
-                                <div className="overflow-hidden">
-
-                                    <img
-                                        src={product.image}
-                                        alt={product.name}
-                                        className="w-full h-[500px] object-cover group-hover:scale-105 transition duration-700"
-                                    />
-
-                                </div>
-
-                                <div className="p-6">
-
-                                    <p className="text-zinc-500 text-sm uppercase">
-                                        {product.category}
-                                    </p>
-
-                                    <h2 className="text-2xl font-bold mt-2">
-                                        {product.name}
-                                    </h2>
-
-                                    <p className="text-zinc-400 mt-2">
-                                        Rs. {product.price}
-                                    </p>
-
-                                    <Link
-                                        href={`/product/${product.id}`}
-                                        className="block text-center mt-6 bg-white text-black py-3 rounded-full font-semibold hover:bg-zinc-200 transition"
-                                    >
-                                        View Product
-                                    </Link>
-
-                                </div>
+                                <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="w-full h-[500px] object-cover group-hover:scale-105 transition duration-700"
+                                />
 
                             </div>
-                        ))
 
-                    )}
+                            <div className="p-6">
+
+                                <p className="text-zinc-500 text-sm uppercase">
+                                    {product.category}
+                                </p>
+
+                                <h2 className="text-2xl font-bold mt-2">
+                                    {product.name}
+                                </h2>
+
+                                <p className="text-zinc-400 mt-2">
+                                    Rs. {product.price}
+                                </p>
+
+                                <Link
+                                    href={`/product/${product.id}`}
+                                    className="block text-center mt-6 bg-white text-black py-3 rounded-full font-semibold hover:bg-zinc-200 transition"
+                                >
+                                    View Product
+                                </Link>
+
+                            </div>
+
+                        </div>
+                    ))}
 
                 </div>
 

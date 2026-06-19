@@ -1,6 +1,6 @@
-import { products } from "@/data/products";
 import Link from "next/link";
 import ProductActions from "@/components/product/ProductActions";
+import { getProduct } from "@/lib/products";
 
 export default async function ProductPage({
     params,
@@ -9,9 +9,7 @@ export default async function ProductPage({
 }) {
     const { id } = await params;
 
-    const product = products.find(
-        (p) => p.id === Number(id)
-    );
+    const product = await getProduct(Number(id));
 
     if (!product) {
         return (
@@ -54,6 +52,11 @@ export default async function ProductPage({
 
                         <p className="text-zinc-400 mt-8 leading-relaxed">
                             {product.description}
+                        </p>
+
+                        {/* Stock */}
+                        <p className="mt-4 text-green-400 font-semibold">
+                            In Stock: {product.stock}
                         </p>
 
                         {/* Size + Cart + Wishlist */}
