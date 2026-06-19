@@ -1,15 +1,21 @@
 import Link from "next/link";
 import { getProducts } from "@/lib/products";
+import { getDashboardStats } from "@/lib/dashboard";
 import DeleteProductButton from "@/components/admin/DeleteProductButton";
 import LogoutButton from "@/components/admin/LogoutButton";
 
 export default async function AdminPage() {
     const products = await getProducts();
 
+    const {
+        totalOrders,
+        totalRevenue,
+        totalProducts,
+    } = await getDashboardStats();
+
     return (
         <div className="min-h-screen bg-black text-white p-10">
 
-            {/* Header */}
             <div className="flex justify-between items-center mb-10">
 
                 <h1 className="text-5xl font-black">
@@ -20,7 +26,42 @@ export default async function AdminPage() {
 
             </div>
 
-            {/* Products Section */}
+            {/* Dashboard Cards */}
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
+
+                <div className="bg-zinc-900 rounded-3xl p-8">
+                    <p className="text-zinc-400">
+                        Total Products
+                    </p>
+
+                    <h2 className="text-5xl font-black mt-3">
+                        {totalProducts}
+                    </h2>
+                </div>
+
+                <div className="bg-zinc-900 rounded-3xl p-8">
+                    <p className="text-zinc-400">
+                        Total Orders
+                    </p>
+
+                    <h2 className="text-5xl font-black mt-3">
+                        {totalOrders}
+                    </h2>
+                </div>
+
+                <div className="bg-zinc-900 rounded-3xl p-8">
+                    <p className="text-zinc-400">
+                        Revenue
+                    </p>
+
+                    <h2 className="text-5xl font-black mt-3">
+                        Rs. {totalRevenue}
+                    </h2>
+                </div>
+
+            </div>
+
+            {/* Products */}
             <div className="bg-zinc-900 rounded-3xl p-8">
 
                 <div className="flex justify-between items-center mb-8">
@@ -71,6 +112,7 @@ export default async function AdminPage() {
                         <tbody>
 
                             {products.map((product: any) => (
+
                                 <tr
                                     key={product.id}
                                     className="border-b border-zinc-800"
@@ -116,6 +158,7 @@ export default async function AdminPage() {
                                     </td>
 
                                 </tr>
+
                             ))}
 
                         </tbody>

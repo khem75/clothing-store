@@ -47,33 +47,27 @@ export default async function OrderDetailsPage({
                 <div className="space-y-3">
 
                     <p>
-                        <strong>Name:</strong>{" "}
-                        {order.customer_name}
+                        <strong>Name:</strong> {order.customer_name}
                     </p>
 
                     <p>
-                        <strong>Email:</strong>{" "}
-                        {order.email}
+                        <strong>Email:</strong> {order.email}
                     </p>
 
                     <p>
-                        <strong>Phone:</strong>{" "}
-                        {order.phone}
+                        <strong>Phone:</strong> {order.phone}
                     </p>
 
                     <p>
-                        <strong>City:</strong>{" "}
-                        {order.city}
+                        <strong>City:</strong> {order.city}
                     </p>
 
                     <p>
-                        <strong>Address:</strong>{" "}
-                        {order.address}
+                        <strong>Address:</strong> {order.address}
                     </p>
 
                     <p>
-                        <strong>Total:</strong>{" "}
-                        Rs. {order.total}
+                        <strong>Total:</strong> Rs. {order.total}
                     </p>
 
                     <div className="flex items-center gap-4">
@@ -81,6 +75,7 @@ export default async function OrderDetailsPage({
                         <strong>Status:</strong>
 
                         <OrderStatus
+                            orderId={order.id}
                             currentStatus={
                                 order.status || "Pending"
                             }
