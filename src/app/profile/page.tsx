@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -17,7 +18,7 @@ export default function ProfilePage() {
             } = await supabase.auth.getUser();
 
             if (!user) {
-                router.push("/login");
+                router.push("/account");
                 return;
             }
 
@@ -27,6 +28,12 @@ export default function ProfilePage() {
 
         getUser();
     }, [router]);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push("/");
+        router.refresh();
+    };
 
     if (loading) {
         return (
@@ -66,6 +73,24 @@ export default function ProfilePage() {
                             {user.id}
                         </p>
                     </div>
+
+                </div>
+
+                <div className="flex gap-4 mt-10">
+
+                    <Link
+                        href="/profile/orders"
+                        className="bg-white text-black px-6 py-3 rounded-full font-bold"
+                    >
+                        My Orders
+                    </Link>
+
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-500 px-6 py-3 rounded-full font-bold"
+                    >
+                        Logout
+                    </button>
 
                 </div>
 
